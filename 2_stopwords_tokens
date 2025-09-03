@@ -1,0 +1,44 @@
+import json
+import pandas as pd
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+import string
+
+# Make sure you have NLTK resources downloaded
+nltk.download("punkt")
+nltk.download("punkt_tab")
+nltk.download("stopwords")
+
+# Load your JSON file (replace with your actual filename)
+with open("documents_with_year.json", "r", encoding="utf-8") as f:
+    docs = json.load(f)
+
+stop_words = set(stopwords.words("english"))
+punct = set(string.punctuation)
+
+cleaned_records = []
+
+for doc in docs:
+    text = doc["text"]
+
+    # Tokenize
+    tokens = word_tokenize(text)
+
+    # Lowercase, remove stopwords & punctuation
+    tokens = [t.lower() for t in tokens if t.lower() not in stop_words and t not in punct]
+
+    cleaned_records.append({
+        "year": doc["year"],
+        "filename": doc["filename"],
+        "clean_text": " ".join(tokens)  # rejoin as cleaned string
+    })
+
+# Save cleaned output to new JSON or CSV
+with open("documents_no_stopwords.json", "w", encoding="utf-8") as f:
+    json.dump(cleaned_records, f, ensure_ascii=False, indent=2)
+
+df = pd.DataFrame(cleaned_records)
+df.to_csv("documents_no_stopwords.csv", index=False, encoding="utf-8")
+
+print(f"Processed {len(cleaned_records)} documents with stopwords removed.")
